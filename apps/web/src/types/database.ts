@@ -15,7 +15,7 @@ export interface Database {
           email: string
           full_name: string | null
           avatar_url: string | null
-          role: 'admin' | 'supervisor' | 'viewer'
+          role: string
           metadata: Json
           created_at: string
           updated_at: string
@@ -25,7 +25,7 @@ export interface Database {
           email: string
           full_name?: string | null
           avatar_url?: string | null
-          role?: 'admin' | 'supervisor' | 'viewer'
+          role?: string
           metadata?: Json
           created_at?: string
           updated_at?: string
@@ -35,7 +35,7 @@ export interface Database {
           email?: string
           full_name?: string | null
           avatar_url?: string | null
-          role?: 'admin' | 'supervisor' | 'viewer'
+          role?: string
           metadata?: Json
           created_at?: string
           updated_at?: string
@@ -49,12 +49,12 @@ export interface Database {
           started_at: string
           ended_at: string | null
           duration: number | null
-          status: 'active' | 'completed' | 'escalated' | 'failed'
+          status: string
           topic: string | null
-          sentiment: 'positive' | 'neutral' | 'negative' | null
+          sentiment: string | null
           ai_handled: boolean
           ai_confidence: number | null
-          escalation_risk: 'low' | 'medium' | 'high' | null
+          escalation_risk: string | null
           metadata: Json
           created_at: string
           updated_at: string
@@ -66,12 +66,12 @@ export interface Database {
           started_at?: string
           ended_at?: string | null
           duration?: number | null
-          status?: 'active' | 'completed' | 'escalated' | 'failed'
+          status?: string
           topic?: string | null
-          sentiment?: 'positive' | 'neutral' | 'negative' | null
+          sentiment?: string | null
           ai_handled?: boolean
           ai_confidence?: number | null
-          escalation_risk?: 'low' | 'medium' | 'high' | null
+          escalation_risk?: string | null
           metadata?: Json
           created_at?: string
           updated_at?: string
@@ -83,12 +83,12 @@ export interface Database {
           started_at?: string
           ended_at?: string | null
           duration?: number | null
-          status?: 'active' | 'completed' | 'escalated' | 'failed'
+          status?: string
           topic?: string | null
-          sentiment?: 'positive' | 'neutral' | 'negative' | null
+          sentiment?: string | null
           ai_handled?: boolean
           ai_confidence?: number | null
-          escalation_risk?: 'low' | 'medium' | 'high' | null
+          escalation_risk?: string | null
           metadata?: Json
           created_at?: string
           updated_at?: string
@@ -98,9 +98,9 @@ export interface Database {
         Row: {
           id: string
           name: string
-          type: 'crm' | 'telephony' | 'messaging' | 'erp' | 'payment' | 'analytics' | 'storage' | 'notification' | 'custom'
+          type: string
           provider: string
-          status: 'active' | 'inactive' | 'error'
+          status: string
           config: Json
           is_mock: boolean
           last_sync_at: string | null
@@ -113,9 +113,9 @@ export interface Database {
         Insert: {
           id?: string
           name: string
-          type: 'crm' | 'telephony' | 'messaging' | 'erp' | 'payment' | 'analytics' | 'storage' | 'notification' | 'custom'
+          type: string
           provider: string
-          status?: 'active' | 'inactive' | 'error'
+          status?: string
           config?: Json
           is_mock?: boolean
           last_sync_at?: string | null
@@ -128,9 +128,9 @@ export interface Database {
         Update: {
           id?: string
           name?: string
-          type?: 'crm' | 'telephony' | 'messaging' | 'erp' | 'payment' | 'analytics' | 'storage' | 'notification' | 'custom'
+          type?: string
           provider?: string
-          status?: 'active' | 'inactive' | 'error'
+          status?: string
           config?: Json
           is_mock?: boolean
           last_sync_at?: string | null
@@ -141,6 +141,7 @@ export interface Database {
           updated_at?: string
         }
       }
+      [key: string]: any
     }
     Views: {
       [_ in never]: never

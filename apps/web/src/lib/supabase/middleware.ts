@@ -1,7 +1,6 @@
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { Database } from '@/types/database';
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({
@@ -10,7 +9,7 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  const supabase = createMiddlewareClient<Database>({ req: request, res: response });
+  const supabase = createMiddlewareClient({ req: request, res: response });
   const { data: { session } } = await supabase.auth.getSession();
 
   const isAuthPage = request.nextUrl.pathname.startsWith('/login');
@@ -22,7 +21,9 @@ export async function updateSession(request: NextRequest) {
                           request.nextUrl.pathname.startsWith('/sop-generator') ||
                           request.nextUrl.pathname.startsWith('/knowledge') ||
                           request.nextUrl.pathname.startsWith('/settings') ||
-                          request.nextUrl.pathname.startsWith('/admin');
+                          request.nextUrl.pathname.startsWith('/admin') ||
+                          request.nextUrl.pathname.startsWith('/reports') ||
+                          request.nextUrl.pathname.startsWith('/live-calls');
 
   if (!session && isDashboardPage) {
     return NextResponse.redirect(new URL('/login', request.url));

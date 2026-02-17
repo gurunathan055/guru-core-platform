@@ -69,8 +69,8 @@ export default function AdminPage() {
       setStats({
         totalUsers: data?.length || 0,
         activeUsers: data?.length || 0,
-        admins: data?.filter((u) => u.role === 'admin').length || 0,
-        supervisors: data?.filter((u) => u.role === 'supervisor').length || 0,
+        admins: data?.filter((u: any) => u.role === 'admin').length || 0,
+        supervisors: data?.filter((u: any) => u.role === 'supervisor').length || 0,
       });
     } catch (error) {
       console.error('Failed to fetch stats');
@@ -79,12 +79,12 @@ export default function AdminPage() {
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
-      const { error } = await supabase
+      const response: any = await supabase
         .from('profiles')
         .update({ role: newRole })
         .eq('id', userId);
 
-      if (error) throw error;
+      if (response.error) throw response.error;
 
       toast.success('User role updated');
       fetchUsers();
@@ -98,12 +98,12 @@ export default function AdminPage() {
     if (!confirm('Are you sure you want to delete this user?')) return;
 
     try {
-      const { error } = await supabase
+      const response: any = await supabase
         .from('profiles')
         .delete()
         .eq('id', userId);
 
-      if (error) throw error;
+      if (response.error) throw response.error;
 
       toast.success('User deleted');
       fetchUsers();
