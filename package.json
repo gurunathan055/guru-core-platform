@@ -22,10 +22,11 @@
     "db:seed": "cd packages/database && supabase db seed"
   },
   "devDependencies": {
-    "turbo": "^2.0.0",
-    "prettier": "^3.2.5",
     "@types/node": "^20.11.19",
-    "typescript": "^5.3.3"
+    "prettier": "^3.2.5",
+    "turbo": "^2.0.0",
+    "typescript": "^5.3.3",
+    "vercel": "^50.18.0"
   },
   "engines": {
     "node": ">=20.0.0",

@@ -20,6 +20,7 @@ import {
   Shield,
   Activity,
   LogOut,
+  FileBarChart,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/lib/hooks/use-media-query';
@@ -47,6 +48,11 @@ const navigationItems = [
     href: '/analytics',
     icon: BarChart3,
     label: 'Analytics',
+  },
+  {
+    href: '/reports',
+    icon: FileBarChart,
+    label: 'Reports',
   },
   {
     href: '/learning',
