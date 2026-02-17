@@ -1,0 +1,10 @@
+{
+  "name": "@guru-core/database",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Database schemas and migrations for Guru-Core",
+  "scripts": {
+    "migrate": "echo 'Run supabase db push to apply migrations'",
+    "seed": "echo 'Run supabase db seed to seed database'"
+  }
+}
