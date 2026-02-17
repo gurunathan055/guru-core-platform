@@ -40,6 +40,11 @@ const navigationItems = [
     label: 'Live Calls',
   },
   {
+    href: '/campaigns',
+    icon: Phone,
+    label: 'Campaigns',
+  },
+  {
     href: '/calls',
     icon: Phone,
     label: 'Calls',
