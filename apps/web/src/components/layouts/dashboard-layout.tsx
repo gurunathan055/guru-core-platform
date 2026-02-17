@@ -21,6 +21,7 @@ import {
   Activity,
   LogOut,
   FileBarChart,
+  Bot,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/lib/hooks/use-media-query';
@@ -38,6 +39,11 @@ const navigationItems = [
     href: '/live-calls',
     icon: Activity,
     label: 'Live Calls',
+  },
+  {
+    href: '/sandbox',
+    icon: Bot,
+    label: 'Sandbox',
   },
   {
     href: '/campaigns',
