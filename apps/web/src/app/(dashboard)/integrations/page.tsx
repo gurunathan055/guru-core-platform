@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { 
   Plus, 
+  Phone, 
   Plug, 
   Settings, 
   Play, 
@@ -31,6 +32,15 @@ import {
 } from 'lucide-react'
 
 const integrationTemplates = [
+  {
+    id: 'knowlarity',
+    name: 'Knowlarity',
+    description: 'Cloud telephony and call routing',
+    icon: Phone,
+    color: 'bg-blue-600',
+    status: 'inactive',
+    category: 'Telephony',
+  },
   {
     id: 'freshdesk',
     name: 'Freshdesk',

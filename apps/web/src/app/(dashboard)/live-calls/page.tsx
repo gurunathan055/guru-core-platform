@@ -34,8 +34,27 @@ export default function LiveCallsPage() {
 
   useEffect(() => {
     fetchActiveCalls();
-    const interval = setInterval(fetchActiveCalls, 5000);
-    return () => clearInterval(interval);
+
+    // Subscribe to real-time changes
+    const channel = supabase
+      .channel('live-calls')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'calls',
+        },
+        (payload) => {
+          console.log('Real-time update:', payload);
+          fetchActiveCalls(); // Refresh list on any change
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchActiveCalls = async () => {
