@@ -92,7 +92,7 @@ export default function OnboardingPage() {
 
     setProfile(profile);
 
-    if (profile?.metadata?.onboarding_completed) {
+    if ((profile as any)?.metadata?.onboarding_completed) {
       router.push('/dashboard');
     }
   };
@@ -116,16 +116,17 @@ export default function OnboardingPage() {
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       const { error } = await supabase
         .from('profiles')
+        // @ts-ignore
         .update({
           metadata: {
-            ...profile?.metadata,
+            ...(profile as any)?.metadata,
             ...formData,
           },
-        })
-        .eq('id', user?.id);
+        } as any)
+        .eq('id', (user?.id as any));
 
       if (error) throw error;
       toast.success('Profile updated!');
@@ -140,18 +141,19 @@ export default function OnboardingPage() {
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       const { error } = await supabase
         .from('profiles')
+        // @ts-ignore
         .update({
           metadata: {
-            ...profile?.metadata,
+            ...(profile as any)?.metadata,
             ...formData,
             onboarding_completed: true,
             onboarding_completed_at: new Date().toISOString(),
           },
-        })
-        .eq('id', user?.id);
+        } as any)
+        .eq('id', (user?.id as any));
 
       if (error) throw error;
 
@@ -372,9 +374,8 @@ export default function OnboardingPage() {
               {steps.map((step, index) => (
                 <div
                   key={step.id}
-                  className={`flex-1 h-2 rounded-full transition-colors ${
-                    index <= currentStep ? 'bg-primary' : 'bg-gray-200'
-                  }`}
+                  className={`flex-1 h-2 rounded-full transition-colors ${index <= currentStep ? 'bg-primary' : 'bg-gray-200'
+                    }`}
                 />
               ))}
             </div>

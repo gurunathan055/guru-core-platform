@@ -2,6 +2,7 @@
   "name": "guru-core",
   "version": "1.0.0",
   "description": "Enterprise Voice SaaS Platform for FMCG L1 Support",
+  "packageManager": "npm@10.5.0",
   "private": true,
   "workspaces": [
     "apps/*",
