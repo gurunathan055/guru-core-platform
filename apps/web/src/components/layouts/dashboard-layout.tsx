@@ -22,6 +22,7 @@ import {
   LogOut,
   FileBarChart,
   Bot,
+  PhoneCall,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/lib/hooks/use-media-query';
@@ -74,6 +75,11 @@ const navigationItems = [
     href: '/sop-generator',
     icon: FileText,
     label: 'SOP Generator',
+  },
+  {
+    href: '/telephony',
+    icon: PhoneCall,
+    label: 'Telephony',
   },
   {
     href: '/integrations',
