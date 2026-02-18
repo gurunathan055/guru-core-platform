@@ -31,7 +31,19 @@ export default function DashboardPage() {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        // If table doesn't exist or RLS blocks, show empty state
+        setStats({
+          totalCalls: 0,
+          aiDeflectionRate: 0,
+          avgResolutionTime: '0:00',
+          activeUsers: 0,
+        });
+        setRecentCalls([]);
+        setLoading(false);
+        return;
+      }
 
       // Calculate stats
       const total = calls?.length || 0;
@@ -66,6 +78,14 @@ export default function DashboardPage() {
       setRecentCalls(formatted);
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
+      // Show empty state on any error
+      setStats({
+        totalCalls: 0,
+        aiDeflectionRate: 0,
+        avgResolutionTime: '0:00',
+        activeUsers: 0,
+      });
+      setRecentCalls([]);
     } finally {
       setLoading(false);
     }
