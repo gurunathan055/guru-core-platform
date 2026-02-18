@@ -1,65 +1,105 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { MetricCard } from '@/components/molecules/metric-card';
 import { ResponsiveTable } from '@/components/organisms/responsive-table';
 import { StatusBadge } from '@/components/molecules/status-badge';
 import { Phone, TrendingUp, Clock, Users } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-
-// Mock data for demonstration
-const recentCalls = [
-  {
-    id: '1',
-    caller_name: 'John Distributor',
-    caller_phone: '+91 98765 43210',
-    status: 'completed' as const,
-    duration: '5:23',
-    time: '10:30 AM',
-  },
-  {
-    id: '2',
-    caller_name: 'Retailer Shop',
-    caller_phone: '+91 98765 43211',
-    status: 'in_progress' as const,
-    duration: '2:15',
-    time: '10:45 AM',
-  },
-  {
-    id: '3',
-    caller_name: 'Customer Query',
-    caller_phone: '+91 98765 43212',
-    status: 'queued' as const,
-    duration: '-',
-    time: '11:00 AM',
-  },
-];
+import { createClient } from '@/lib/supabase/client';
 
 export default function DashboardPage() {
+  const [stats, setStats] = useState({
+    totalCalls: 0,
+    aiDeflectionRate: 0,
+    avgResolutionTime: '0:00',
+    activeUsers: 0,
+  });
+  const [recentCalls, setRecentCalls] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const supabase = createClient();
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  async function fetchDashboardData() {
+    try {
+      // Fetch all calls
+      const { data: calls, error } = await supabase
+        .from('calls')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Calculate stats
+      const total = calls?.length || 0;
+      const aiHandled = calls?.filter(c => c.ai_handled).length || 0;
+      const completed = calls?.filter(c => c.status === 'completed') || [];
+      
+      const avgDuration = completed.length > 0
+        ? completed.reduce((sum, c) => sum + (c.duration || 0), 0) / completed.length
+        : 0;
+
+      const mins = Math.floor(avgDuration / 60);
+      const secs = Math.round(avgDuration % 60);
+
+      setStats({
+        totalCalls: total,
+        aiDeflectionRate: total > 0 ? Math.round((aiHandled / total) * 100) : 0,
+        avgResolutionTime: `${mins}:${secs.toString().padStart(2, '0')}`,
+        activeUsers: calls?.filter(c => c.status === 'active').length || 0,
+      });
+
+      // Format recent calls
+      const formatted = (calls || []).slice(0, 5).map(call => ({
+        id: call.id,
+        caller_name: call.caller_name || 'Unknown',
+        caller_phone: call.caller_phone || 'N/A',
+        status: call.status === 'active' ? 'in_progress' as const : 
+                call.status === 'completed' ? 'completed' as const : 'queued' as const,
+        duration: call.duration ? `${Math.floor(call.duration / 60)}:${(call.duration % 60).toString().padStart(2, '0')}` : '-',
+        time: new Date(call.started_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      }));
+
+      setRecentCalls(formatted);
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-64">Loading dashboard...</div>;
+  }
+
   return (
     <div className="space-y-6 pb-20 md:pb-6">
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           title="Total Calls Today"
-          value="248"
+          value={stats.totalCalls.toString()}
           change={{ value: 12, trend: 'up' }}
           icon={<Phone className="w-4 h-4" />}
         />
         <MetricCard
           title="AI Deflection Rate"
-          value="73%"
+          value={`${stats.aiDeflectionRate}%`}
           change={{ value: 5, trend: 'up' }}
           icon={<TrendingUp className="w-4 h-4" />}
         />
         <MetricCard
           title="Avg Resolution Time"
-          value="3:45"
+          value={stats.avgResolutionTime}
           change={{ value: 8, trend: 'down' }}
           icon={<Clock className="w-4 h-4" />}
         />
         <MetricCard
-          title="Active Users"
-          value="1,234"
+          title="Active Calls"
+          value={stats.activeUsers.toString()}
           change={{ value: 3, trend: 'up' }}
           icon={<Users className="w-4 h-4" />}
         />

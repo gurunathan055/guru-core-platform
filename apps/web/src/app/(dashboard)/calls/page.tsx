@@ -1,35 +1,66 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { ResponsiveTable } from '@/components/organisms/responsive-table';
 import { StatusBadge } from '@/components/molecules/status-badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Filter } from 'lucide-react';
-
-// Mock data
-const calls = [
-  {
-    id: '1',
-    caller_name: 'John Distributor',
-    caller_phone: '+91 98765 43210',
-    status: 'completed' as const,
-    duration: '5:23',
-    time: '10:30 AM',
-    resolution: 'AI Resolved',
-  },
-  {
-    id: '2',
-    caller_name: 'Retailer Shop',
-    caller_phone: '+91 98765 43211',
-    status: 'in_progress' as const,
-    duration: '2:15',
-    time: '10:45 AM',
-    resolution: 'In Progress',
-  },
-];
+import { createClient } from '@/lib/supabase/client';
 
 export default function CallsPage() {
+  const [calls, setCalls] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('all');
+  const supabase = createClient();
+
+  useEffect(() => {
+    fetchCalls();
+  }, [activeTab]);
+
+  async function fetchCalls() {
+    setLoading(true);
+    try {
+      let query = supabase
+        .from('calls')
+        .select('*')
+        .order('started_at', { ascending: false });
+
+      // Filter by tab
+      if (activeTab === 'active') {
+        query = query.eq('status', 'active');
+      } else if (activeTab === 'completed') {
+        query = query.eq('status', 'completed');
+      } else if (activeTab === 'escalated') {
+        query = query.eq('status', 'escalated');
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      // Format data for display
+      const formatted = (data || []).map(call => ({
+        id: call.id,
+        caller_name: call.caller_name || 'Unknown',
+        caller_phone: call.caller_phone || 'N/A',
+        status: call.status === 'active' ? 'in_progress' as const : 
+                call.status === 'completed' ? 'completed' as const : 
+                call.status === 'escalated' ? 'escalated' as const : 'queued' as const,
+        duration: call.duration ? `${Math.floor(call.duration / 60)}:${(call.duration % 60).toString().padStart(2, '0')}` : '-',
+        time: new Date(call.started_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        resolution: call.ai_handled ? 'AI Resolved' : 'Human Required',
+      }));
+
+      setCalls(formatted);
+    } catch (error) {
+      console.error('Failed to fetch calls:', error);
+      setCalls([]);
+    } finally {
+      setLoading(false);
+    }
+  }
   return (
     <div className="space-y-6 pb-20 md:pb-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -43,7 +74,7 @@ export default function CallsPage() {
         </Button>
       </div>
 
-      <Tabs defaultValue="all" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4 sm:w-auto">
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="active">Active</TabsTrigger>
@@ -51,14 +82,25 @@ export default function CallsPage() {
           <TabsTrigger value="escalated">Escalated</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="all" className="space-y-4">
+        <TabsContent value={activeTab} className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>All Calls</CardTitle>
-              <CardDescription>Complete call history and live calls</CardDescription>
+              <CardTitle>
+                {activeTab === 'all' ? 'All Calls' : 
+                 activeTab === 'active' ? 'Active Calls' :
+                 activeTab === 'completed' ? 'Completed Calls' : 'Escalated Calls'}
+              </CardTitle>
+              <CardDescription>
+                {loading ? 'Loading calls...' : `${calls.length} calls found`}
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveTable
+              {loading ? (
+                <div className="text-center py-8">Loading...</div>
+              ) : calls.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">No calls found</div>
+              ) : (
+                <ResponsiveTable
                 data={calls}
                 columns={[
                   {
@@ -106,30 +148,7 @@ export default function CallsPage() {
                   </div>
                 )}
               />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="active">
-          <Card>
-            <CardContent className="py-12 text-center text-gray-500">
-              No active calls at the moment
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="completed">
-          <Card>
-            <CardContent className="py-12 text-center text-gray-500">
-              Completed calls will appear here
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="escalated">
-          <Card>
-            <CardContent className="py-12 text-center text-gray-500">
-              No escalated calls
+              )}
             </CardContent>
           </Card>
         </TabsContent>
