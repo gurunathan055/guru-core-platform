@@ -83,6 +83,9 @@ CREATE TABLE IF NOT EXISTS campaigns (
 -- ============================================================================
 -- 5. DOCUMENTS TABLE (Knowledge Base)
 -- ============================================================================
+-- ENABLE VECTOR EXTENSION FOR AI MEMORY
+CREATE EXTENSION IF NOT EXISTS vector;
+
 CREATE TABLE IF NOT EXISTS documents (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   title TEXT NOT NULL,
@@ -97,6 +100,48 @@ CREATE TABLE IF NOT EXISTS documents (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- AI MEMORY (Embeddings)
+CREATE TABLE IF NOT EXISTS document_embeddings (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  document_id UUID REFERENCES documents(id) ON DELETE CASCADE,
+  content TEXT, -- Chunk of text
+  embedding vector(1536), -- OpenAI text-embedding-3-small
+  metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- INDEX FOR FAST SEARCH
+CREATE INDEX ON document_embeddings USING ivfflat (embedding vector_cosine_ops)
+WITH (lists = 100);
+
+-- SEARCH FUNCTION (RPC)
+CREATE OR REPLACE FUNCTION match_documents (
+  query_embedding vector(1536),
+  match_threshold float,
+  match_count int
+)
+RETURNS TABLE (
+  id UUID,
+  document_id UUID,
+  content TEXT,
+  similarity float
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    document_embeddings.id,
+    document_embeddings.document_id,
+    document_embeddings.content,
+    1 - (document_embeddings.embedding <=> query_embedding) as similarity
+  FROM document_embeddings
+  WHERE 1 - (document_embeddings.embedding <=> query_embedding) > match_threshold
+  ORDER BY document_embeddings.embedding <=> query_embedding
+  LIMIT match_count;
+END;
+$$;
 
 -- ============================================================================
 -- 6. SOPS TABLE (Standard Operating Procedures)
